@@ -8,6 +8,7 @@ Created on Jun 14, 2013
 import pygame
 import utility
 import sys
+import ship
 
 from __init__ import *
 
@@ -34,23 +35,27 @@ def main():
     screen = pygame.display.set_mode((width, height), mode, depth)    
     pygame.display.set_caption(title)
 
-
+    # Create game objects
+    shipSprite = ship.MiGX3(screen)
+    gameSprites = pygame.sprite.OrderedUpdates(shipSprite)
+    
     background = pygame.Surface(screen.get_size())
     background.fill((0, 0, 0))
-    screen.blit(background, (0, 0))
-
 
     clock = pygame.time.Clock()
     keepGoing = True
     while keepGoing:
-        clock.tick(30)
+        clock.tick(15)
         pygame.mouse.set_visible(False)
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 keepGoing = False
                 
+        gameSprites.update()
+        gameSprites.draw(screen)
 
         pygame.display.flip()
-    
+        screen.blit(background, (0, 0))
+        
 if __name__ == "__main__" : main()
 
