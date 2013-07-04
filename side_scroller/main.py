@@ -4,11 +4,18 @@ Created on Jun 14, 2013
 @author: Justin Hellsten
 '''
 
+# Fix directory pathing
+import os
+os.chdir(os.path.dirname(os.path.realpath(__file__)))
+
+
 # Import and Initialize
 import pygame
 import utility
 import sys
+
 import ship
+import background
 
 from __init__ import *
 
@@ -37,15 +44,17 @@ def main():
 
     # Create game objects
     shipSprite = ship.MiGX3(screen)
-    gameSprites = pygame.sprite.OrderedUpdates(shipSprite)
+    stageOne = background.Background()
     
-    background = pygame.Surface(screen.get_size())
-    background.fill((0, 0, 0))
+    gameSprites = pygame.sprite.OrderedUpdates(stageOne, shipSprite)
+    
+    
+
 
     clock = pygame.time.Clock()
     keepGoing = True
     while keepGoing:
-        clock.tick(15)
+        clock.tick(30)
         pygame.mouse.set_visible(False)
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -55,7 +64,7 @@ def main():
         gameSprites.draw(screen)
 
         pygame.display.flip()
-        screen.blit(background, (0, 0))
+
         
 if __name__ == "__main__" : main()
 

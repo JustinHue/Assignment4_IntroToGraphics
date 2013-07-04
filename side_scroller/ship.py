@@ -20,6 +20,8 @@ class Ship(pygame.sprite.Sprite):
         self.lastmousey = 0
         self.curmousey = 0
         
+        
+        
     def update (self):                
         mousex, mousey = pygame.mouse.get_pos()
         
@@ -36,35 +38,35 @@ class Ship(pygame.sprite.Sprite):
 
 class MiGX3(Ship):
     def __init__(self, screen):
-        self.image = pygame.surface.Surface((64, 50))
-        Ship.__init__(self, screen)
-        
+        self.image = pygame.surface.Surface((64, 50), pygame.SRCALPHA)
+
         self.spritesheet = pygame.image.load( IMG_DIRECTORY + "MiG-X3.png" )
         self.image.blit(self.spritesheet, (0,0))
+        
+        Ship.__init__(self, screen)
+        
         
     def update(self):
         Ship.update(self)
         
         dmy = self.curmousey - self.lastmousey 
-        if dmy > 0:
-            self.flyDown() 
-        elif dmy < 0:
-            self.flyUp()
+        
+        if dmy != 0:
+            self.flyVertically() 
         else:
             self.flyStraight()
+
                 
-        
-    def flyDown(self):
-        self.image.blit(self.spritesheet, (64,0))
-        print 'Flying Down'
-        
-    def flyUp(self):
-        self.image.blit(self.spritesheet, (128,0))
-        print 'Flying up'
+                
+    def flyVertically(self):  
+        tmp_image = pygame.surface.Surface((64, 50), pygame.SRCALPHA)
+        tmp_image.blit(self.spritesheet, (0,0), pygame.rect.Rect((64,0), (64,50)))
+        self.image = tmp_image
         
     def flyStraight(self):
-        self.image.blit(self.spritesheet, (0,0))
-        print 'Flying straight'
+        tmp_image = pygame.surface.Surface((64, 50), pygame.SRCALPHA)
+        tmp_image.blit(self.spritesheet, (0,0))
+        self.image = tmp_image
 
         
         
