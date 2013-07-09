@@ -1,6 +1,6 @@
 
 # Define Game Constants
-CONFIG_DIRECTORY = '../../side_scroller.cfg'
+CONFIG_DIRECTORY = '../side_scroller.cfg'
 IMG_DIRECTORY = '../imgs/'
 
 # Define default configuration values

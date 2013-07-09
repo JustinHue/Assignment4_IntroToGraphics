@@ -1,21 +1,28 @@
 '''
 Created on Jul 4, 2013
 
-@author: 200197858
+@author: Justin Hellsten
 '''
 
 import pygame
-from __init__ import IMG_DIRECTORY
-
 
 class Background(pygame.sprite.Sprite):    
-    def __init__(self):         
+    def __init__(self, screen, sprite):         
         pygame.sprite.Sprite.__init__(self)        
-        self.image = pygame.image.load( IMG_DIRECTORY + "AeroFighters2-Stage8-Tikal,Mexico.png" ).convert_alpha()     
-        self.rect = self.image.get_rect()        
-        self.dx = -3          
+        self.screen = screen
+        self.sprite = sprite
+        self.image = pygame.surface.Surface((self.sprite.get_width()*3, self.sprite.get_height()))
+        self.rect = self.image.get_rect()
+        self.dx = -5
         
-    def update (self):        
-        self.rect.right += self.dx        
-        if self.rect.right <= 800:            
-            self.rect.left = 0
+        self.image.blit(self.sprite, (0, 0))
+        self.image.blit(pygame.transform.flip(self.sprite, True, False), (self.sprite.get_width(), 0))
+        self.image.blit(self.sprite, (self.sprite.get_width()*2, 0))
+
+    def update (self):
+        self.rect.right += self.dx
+        if self.rect.right <= self.screen.get_width():
+            self.rect.left = self.screen.get_width() - self.sprite.get_width()
+            
+         
+            

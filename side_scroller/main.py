@@ -44,12 +44,12 @@ def main():
 
     # Create game objects
     shipSprite = ship.MiGX3(screen)
-    stageOne = background.Background()
+    stageOne = background.Background(screen, pygame.image.load( IMG_DIRECTORY + "water.png" ))
     
     gameSprites = pygame.sprite.OrderedUpdates(stageOne, shipSprite)
-    
-    
 
+    
+    
 
     clock = pygame.time.Clock()
     keepGoing = True

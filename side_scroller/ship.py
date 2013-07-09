@@ -55,8 +55,7 @@ class MiGX3(Ship):
             self.flyVertically() 
         else:
             self.flyStraight()
-
-                
+      
                 
     def flyVertically(self):  
         tmp_image = pygame.surface.Surface((64, 50), pygame.SRCALPHA)
