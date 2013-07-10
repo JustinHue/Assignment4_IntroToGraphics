@@ -6,7 +6,7 @@ Created on Jul 4, 2013
 
 import pygame
 
-class Background(pygame.sprite.Sprite):    
+class Parallax(pygame.sprite.Sprite):    
     def __init__(self, screen, sprite):         
         pygame.sprite.Sprite.__init__(self)        
         self.screen = screen

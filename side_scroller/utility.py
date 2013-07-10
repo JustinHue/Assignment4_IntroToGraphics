@@ -32,8 +32,7 @@ def __open_config_file(directory):
         return ''
     
 def __populate_map(configFile):
-    line = ''
-    configMap = {}
+    line, configMap = '', {}
     for line in configFile.readlines():
         tokens = line.strip().split('=')
         if len(tokens) == 2:

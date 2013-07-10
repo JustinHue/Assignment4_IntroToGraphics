@@ -10,11 +10,9 @@ from __init__ import IMG_DIRECTORY
 class Ship(pygame.sprite.Sprite):
     def __init__(self, screen):
         pygame.sprite.Sprite.__init__(self)
-        
         self.rect = self.image.get_rect()
         self.screen = screen
         
-        self.rect.center = (100, screen.get_height()/2)
         
         # Set mouse track fields
         self.lastmousey = 0

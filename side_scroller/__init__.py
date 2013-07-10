@@ -1,7 +1,8 @@
 
 # Define Game Constants
 CONFIG_DIRECTORY = '../side_scroller.cfg'
-IMG_DIRECTORY = '../imgs/'
+IMG_DIRECTORY = '../gfx/'
+SOUND_DIRECTORY = '../sfx/'
 
 # Define default configuration values
 DEF_WINDOW_W = 800
