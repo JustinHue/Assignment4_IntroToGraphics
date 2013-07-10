@@ -261,7 +261,7 @@ def startScreen():
         
 def gamePlayScreen():
     running = True
-    currentStage = 1
+    currentStage = 3
     
     #Clear Screen
     background = pygame.Surface(screen.get_size())
@@ -283,7 +283,7 @@ def gamePlayScreen():
         print("Cannot Load Sounds")
     else:
         pygame.mixer.init()
-        pygame.mixer.music.load(SOUND_DIRECTORY + "stage1_theme.ogg")
+        pygame.mixer.music.load(SOUND_DIRECTORY + "stage3_theme.ogg")
         pygame.mixer.music.play(-1)
             
     while running:
