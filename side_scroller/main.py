@@ -19,11 +19,21 @@ import parallax
 import startScreen
 from __init__ import *
 
+import stages
+
 pygame.init()
 utility.init()
 
 pygame.font.init()
 
+def stageOne():
+    
+def stageTwo():
+    
+    
+def stageThree():
+    
+    
 def main():
     utility.set_config_file(CONFIG_DIRECTORY)
     
@@ -43,18 +53,16 @@ def main():
     screen = pygame.display.set_mode((width, height), mode, depth)    
     pygame.display.set_caption(title)
 
-    startscreen = startScreen.StartScreen(screen)
+
+    # Create Stages
+    stageOne = stages.StageOne(screen)
+
     
     # Create game objects
     shipSprite = ship.MiGX3(screen)
-    stageOne = parallax.Parallax(screen, pygame.image.load( IMG_DIRECTORY + "stage1.jpg" ))
     
-    gameSprites = pygame.sprite.OrderedUpdates(stageOne, shipSprite)
+    
 
-    if not pygame.mixer:
-         print("Cannot Load Sounds")
-    else:
-        pygame.mixer.init()
 
         
     clock = pygame.time.Clock()
@@ -65,20 +73,10 @@ def main():
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 keepGoing = False
-                
-        if startscreen.menuState == startScreen.StartScreen.MENU_PLAY:
-            gameSprites.update()
-            gameSprites.draw(screen)
-        elif startscreen.menuState == startScreen.StartScreen.MENU_INSTRUCTION:
-            gameSprites.update()
-            gameSprites.draw(screen)
-        elif startscreen.menuState == startScreen.StartScreen.MENU_EXIT:
-            gameSprites.update()
-            gameSprites.draw(screen) 
-        else:
-            startscreen.update()
-            startscreen.draw(screen)
-        
+
+        stageOne.update()
+        stageOne.draw(screen)
+            
         pygame.display.flip()
 
         

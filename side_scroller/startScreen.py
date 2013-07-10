@@ -18,7 +18,7 @@ class StartScreen(pygame.sprite.Sprite):
     
     def __init__(self, screen):
         pygame.sprite.Sprite.__init__(self)  
-        self.spriteGroup = pygame.sprite.Group(parallax.Parallax(screen, pygame.image.load( IMG_DIRECTORY + "parallax.jpg" )))
+        self.spriteGroup = pygame.sprite.Group(parallax.Parallax(screen, pygame.image.load( IMG_DIRECTORY + "stage1.jpg" )))
         
         #self.font = pygame.font.SysFont("None", 50)
         self.menuState = StartScreen.MENU_NONE
