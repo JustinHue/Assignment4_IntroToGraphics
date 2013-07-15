@@ -5,33 +5,23 @@
  
  Program Description: A side scroller game for assignment 4 Intro to Graphics.
  
- Revision History: 0.0.8
+ Revision History: 0.0.9
  
-    -> Added ScoreBoard and LifeCounter classes
-    -> Positioned score and life counter on screen
-    -> Added random enemy class. The AI will spawn the enemy randomly from the right side of the screen.
-    -> Added stage one setup function
-    -> Added linear enemy class. Same as random except it spawns at the same y axis as the player's ship y position.
-    -> Added collision detection with player and random enemy
-    -> Added collision sound effects for bullet and ship
-    -> Updated score for collisions
-    -> Added explosion class
-    -> Explosion class works from spritesheet for now...
+    -> Added resource class (in another module). Will hold resources and constants
+    -> Added flashing when planes are hit
+    -> Changed parallax class to get dx from constructor
+    -> Added sky and city layer for stage one
     
 """
 
 """ Import and Initialize """
-import pygame, utility, sys, random
+import pygame, utility, sys, random, resource
+from resource import *
+
 
 pygame.init()
 utility.init()
-
-""" Game Constants """
-CONFIG_DIRECTORY = 'side_scroller.cfg'
-IMG_DIRECTORY = 'gfx/'
-SOUND_DIRECTORY = 'sfx/'
-
-STAGE_BACKGROUNDS = ['stage1.jpg', 'stage2.jpg', 'stage3.jpg']
+resource.init()
 
 """ Read configuration file """
 utility.set_config_file(CONFIG_DIRECTORY)
@@ -56,6 +46,7 @@ pygame.display.set_caption(title)
 pygame.mouse.set_visible(False)
 clock = pygame.time.Clock()
 
+
 """ Explosion """
 class Explosion(pygame.sprite.Sprite):
 
@@ -64,34 +55,27 @@ class Explosion(pygame.sprite.Sprite):
         
     def __init__(self, center, dx):
         pygame.sprite.Sprite.__init__(self)
-        
-        self.spritesheet = pygame.image.load( IMG_DIRECTORY + 'explosion/explosion_sprite_sheet.png')
         self.images = []
-        self.loadImages()
-        self.image = self.imageStand
+
         self.frame = 0
         self.pause = 0
         self.delay = 0
         self.state = Explosion.STANDING
+        self.dx = dx
         
-        self.dx = dx   
- 
+        self.imageStand = GfxResource.explosion[len(GfxResource.explosion)-1]
+        self.image = self.imageStand
+        
         self.rect = self.image.get_rect()
         self.rect.center = center
-                
-    def loadImages(self):
-        for y in xrange(4, -1, -1):
-            for x in xrange(4, -1, -1):
-                tmp_image = pygame.surface.Surface((64, 64), pygame.SRCALPHA)
-                tmp_image.blit(self.spritesheet, (0, 0), pygame.rect.Rect(x*64, y*64, 64, 64))
-                self.images.append(tmp_image)                
-                
-        self.imageStand = self.images[len(self.images)-1]
-                
+        self.center = center
+         
     def update(self):
         
-        self.rect.left += self.dx
+        # Make sure to move explosion base on center and delta x
+        self.center = (self.center[0] + self.dx, self.center[1])
         
+        # Check up on the explosion animation
         if self.state == Explosion.STANDING:
             self.image = self.imageStand
         else:
@@ -100,33 +84,43 @@ class Explosion(pygame.sprite.Sprite):
                 #reset pause and advance animation
                 self.pause = 0
                 self.frame += 1
-                if self.frame >= len(self.images):
+                if self.frame >= len(GfxResource.explosion):
                     self.frame = 0
                     self.state = Explosion.STANDING
                     self.image = self.imageStand
                     self.kill()
                 else:
-                    self.image = self.images[self.frame]
-                    
-        
+                    self.image = GfxResource.explosion[self.frame]
+                 
+        self.rect = self.image.get_rect()
+        self.rect.center = self.center
+                
         
 """ Enemy Classes """ 
 class RandomEnemy(pygame.sprite.Sprite):
-    def __init__(self, screen):
+    
+    HIT_POINTS = 30
+    
+    MAX_SPEED = 10
+    MIN_SPEED = 5
+    
+    def __init__(self, screen, player):
         pygame.sprite.Sprite.__init__(self)
         self.screen = screen
-        self.image = pygame.image.load( IMG_DIRECTORY + 'random_enemy.png')
-        self.rect = self.image.get_rect()        
-        self.health = 30
-        self.dx = 0
-        self.reset()        
+        self.player = player
+        self.bullets = []
         
-        if not pygame.mixer:
-            print("Cannot Load Sounds")
-        else:
-            pygame.mixer.init()
-            self.sndHit = pygame.mixer.Sound( SOUND_DIRECTORY + "random_enemy_hit.ogg")
-            self.sndDeath = pygame.mixer.Sound( SOUND_DIRECTORY + "random_enemy_death.ogg")
+        self.image = GfxResource.re
+        self.health = RandomEnemy.HIT_POINTS
+        
+        self.isHit = False
+        self.isAttacking = False
+        
+        self.rect = self.image.get_rect()        
+        self.reset()        
+
+        self.sndHit = SfxResource.reHit
+        self.sndDeath = SfxResource.reDeath
 
     def update(self):
         """ 
@@ -135,19 +129,31 @@ class RandomEnemy(pygame.sprite.Sprite):
                 -> If gets to left side of screen it resets
                 -> Upon reset randomizes its entry into the screen again
                 -> Will be killed if destroyed by player
+                -> If the player is in the path we shoot at the player
                 """
         self.rect.left += self.dx        
         if self.rect.right <= 0:
             self.reset()
+
+        if self.isHit:
+            self.image.set_colorkey((25, 12, 255))
+            self.isHit = False
+
+            
+             
+        #Attack the player if he is in plain sight
+        if self.player.rect.right < self.rect.left and self.player.rect.top > self.rect.top and self.player.rect.top < self.rect.bottom:            
+            self.isAttacking = True
             
     def reset(self):
         #Randomize entry point onto screen
         self.rect.center = (self.screen.get_width()+self.image.get_width()*2, 
                             random.randint(self.image.get_height(),screen.get_height()-self.image.get_height()/2))
-        self.dx = random.randrange(-10, -5)
+        self.dx = random.randrange(-RandomEnemy.MAX_SPEED, -RandomEnemy.MIN_SPEED)
+       
         
-class LinearEnemy(pygame.sprite.Sprite):
-    def __init__(self, screen):
+class HorizontalLinearEnemy(pygame.sprite.Sprite):
+    def __init__(self, screen, player):
         pygame.sprite.Sprite.__init__(self)
         self.screen = screen
         self.image = pygame.image.load( IMG_DIRECTORY + 'random_enemy.png')
@@ -160,8 +166,9 @@ class LinearEnemy(pygame.sprite.Sprite):
             AI:
                 -> Moves right to left
                 -> If gets to left side of screen it resets
-                -> Upon reset randomizes its entry into the screen again
+                -> Upon reset it goes back to it's first randomized point
                 -> Will be killed if destroyed by player
+                -> All linear enemies move the same speed
                 """
         self.rect.left += self.dx        
         if self.rect.right <= 0:
@@ -172,16 +179,44 @@ class LinearEnemy(pygame.sprite.Sprite):
         self.rect.center = (self.screen.get_width()+self.image.get_width()*2, 
                             random.randint(self.image.get_height()/2,screen.get_height()-self.image.get_height()/2))
         
+
+class VerticalLinearEnemy(pygame.sprite.Sprite):
+    def __init__(self, screen):
+        pygame.sprite.Sprite.__init__(self)
+        self.screen = screen
+        self.image = pygame.image.load( IMG_DIRECTORY + 'random_enemy.png')
+        self.rect = self.image.get_rect()        
+        self.dy = -5
+        self.reset()
         
+    def update(self):
+        """ 
+            AI:
+                -> Moves top bottom
+                -> If gets to left side of screen it resets
+                -> Upon reset it goes back to it's first randomized point
+                -> Will be killed if destroyed by player
+                """
+        self.rect.left += self.dx        
+        if self.rect.right <= 0:
+            self.reset()
+            
+    def reset(self):
+        #Randomize entry point onto screen
+        self.rect.center = (self.screen.get_width()+self.image.get_width()*2, 
+                            random.randint(self.image.get_height()/2,screen.get_height()-self.image.get_height()/2))
+
+
+                
 """ Classes """ 
 class Parallax(pygame.sprite.Sprite):    
-    def __init__(self, screen, sprite):         
+    def __init__(self, screen, sprite, dx):         
         pygame.sprite.Sprite.__init__(self)        
         self.screen = screen
         self.sprite = sprite
-        self.image = pygame.surface.Surface((self.sprite.get_width()*3, self.sprite.get_height()))
+        self.image = pygame.surface.Surface((self.sprite.get_width()*3, self.sprite.get_height()), pygame.SRCALPHA)
         self.rect = self.image.get_rect()
-        self.dx = -5
+        self.dx = dx
         
         self.image.blit(self.sprite, (0, 0))
         self.image.blit(pygame.transform.flip(self.sprite, True, False), (self.sprite.get_width(), 0))
@@ -192,6 +227,28 @@ class Parallax(pygame.sprite.Sprite):
         if self.rect.right <= self.screen.get_width():
             self.rect.left = self.screen.get_width() - self.sprite.get_width()
       
+class Cloud(pygame.sprite.Sprite):
+    def __init__(self, screen, center):
+        pygame.sprite.Sprite.__init__(self)
+        self.screen = screen
+        self.dx = -6
+        self.image = GfxResource.clouds[random.randint(0, 2)]
+        self.rect = self.image.get_rect()
+        self.rect.center = center
+
+        
+    def update(self):
+        self.rect.right += self.dx
+        if self.rect.right <= 0:
+            self.reset()
+        
+    def reset(self):
+        #Randomize vertical location         
+        self.rect.center = (self.screen.get_width()+self.image.get_width()*2, 
+                            random.randint(-self.image.get_height()/2,screen.get_height()/2-self.image.get_height()/2))
+
+
+   
 class Projectile(pygame.sprite.Sprite):
     def __init__(self, screen, image, startx, starty, damage):   
         pygame.sprite.Sprite.__init__(self)  
@@ -341,8 +398,16 @@ def startScreen():
     background.fill((0, 0, 0))
     screen.blit(background, (0, 0))
 
+    #Declare background sprites 
+    currentStage = random.randint(1, 3)
+    citySprite = Parallax(screen, pygame.image.load( STAGE_BACKGROUNDS[1-1][0] ), -5)
+    skySprite = Parallax(screen, pygame.image.load( STAGE_BACKGROUNDS[1-1][1] ), -1)
+    cloudSprites =  []
+    cloudSprites.append(Cloud(screen, (0, 000)))
+    cloudSprites.append(Cloud(screen, (300, 100)))
+    cloudSprites.append(Cloud(screen, (600, 200)))
+    
     #Declare sprites
-    backgroundSprite = Parallax(screen, pygame.image.load( IMG_DIRECTORY + "stage%d.jpg" % (random.randint(1, 3)) ))
     shipSprite = MiGX3(screen, screen.get_width()/2, 0)
         
     mainTitle = MyFont('War Thunder', screen.get_width()/2, 100, 50, (0, 0, 0))
@@ -352,7 +417,7 @@ def startScreen():
     clickAnywhereText = MyFont('Click any key to continue...', screen.get_width()/2, screen.get_height()/2+100, 30, (0, 0, 0))
     
     #Define groups
-    backgroundSprites = pygame.sprite.Group(backgroundSprite)
+    backgroundSprites = pygame.sprite.OrderedUpdates(skySprite, cloudSprites, citySprite)
     playerSprites = pygame.sprite.Group(shipSprite)
     fontSprites = pygame.sprite.Group(mainTitle, movementText, shootBulletText, shootSpecialText, clickAnywhereText)
     pwBulletSprites = pygame.sprite.Group()
@@ -406,12 +471,12 @@ def startScreen():
     return toContinue
 
 
-def setupStageOne(randomEnemySprites):
+def setupStageOne(randomEnemies,player):
     # Add 10 random enemy sprites
     for i in range(10):
-        randomEnemySprites.add(RandomEnemy(screen))
+        randomEnemies.add(RandomEnemy(screen, player))
         
-    return randomEnemySprites
+    return randomEnemies
 
 
 def updateStageOne(randomEnemySprites, linearHorizontalEnemySprites):
@@ -427,18 +492,24 @@ def gamePlayScreen():
     
     #Clear Screen
     background = pygame.Surface(screen.get_size())
-    background.fill((0, 0, 0))
+    background.fill((255, 255, 255))
     screen.blit(background, (0, 0))
 
-    #Declare sprites
-    backgroundSprite = Parallax(screen, pygame.image.load( IMG_DIRECTORY + "stage%d.jpg" % currentStage ))
+    #Declare background sprites 
+    citySprite = Parallax(screen, pygame.image.load( STAGE_BACKGROUNDS[currentStage-1][0] ), -5)
+    skySprite = Parallax(screen, pygame.image.load( STAGE_BACKGROUNDS[currentStage-1][1] ), -1)
+    cloudSprites =  []
+    cloudSprites.append(Cloud(screen, (0, 000)))
+    cloudSprites.append(Cloud(screen, (300, 100)))
+    cloudSprites.append(Cloud(screen, (600, 200)))
+    
     shipSprite = MiGX3(screen, 50, 0)
         
     scoreBoard = ScoreBoard(screen.get_width() / 2 * 1.5, 25)
     lifeCounter = LifeCounter(screen.get_width() / 2 * 0.5, 25)
     
     #Define groups
-    backgroundSprites = pygame.sprite.Group(backgroundSprite)
+    backgroundSprites = pygame.sprite.OrderedUpdates(skySprite, cloudSprites, citySprite)
     boardPanelSprites = pygame.sprite.Group(scoreBoard, lifeCounter)
     playerSprites = pygame.sprite.Group(shipSprite)
     pwBulletSprites = pygame.sprite.Group()
@@ -447,7 +518,7 @@ def gamePlayScreen():
     explosionSprites = pygame.sprite.Group()
     
     # Set up stage one
-    randomEnemySprites = setupStageOne(randomEnemySprites)
+    randomEnemySprites = setupStageOne(randomEnemySprites, shipSprite)
     
     # Play intro theme
     if not pygame.mixer:
@@ -498,7 +569,7 @@ def gamePlayScreen():
                 for res in randomEnemySprites:
                     res.reset()
         
-        #Check if primary weapon bullet hit any enemies
+        #Check if primary weapon bullet hit any enemies 
         for pwBullet in pwBulletSprites:
             pwBullet_RandomEnemy_collision = pygame.sprite.spritecollide(pwBullet, randomEnemySprites, False)
             
@@ -513,11 +584,13 @@ def gamePlayScreen():
                         re.kill()
                         explosion = Explosion(re.rect.center, re.dx)
                         explosion.state = Explosion.EXPLODING
-                        explosionSprites.add(explosion)                
+                        explosionSprites.add(explosion)                                       
                     else:
                         # Play hit sound effect
                         scoreBoard.score += 10
                         re.sndHit.play()
+                        re.isHit = True
+                        
                 pwBullet.kill()
         
         #Check if secondary weapon bullet hit any enemies     
@@ -559,8 +632,9 @@ def gameEndScreen():
     
     while running:
         clock.tick(30)
-    
+
 def main():
+    
     keepPlaying = True
     
     while keepPlaying:
