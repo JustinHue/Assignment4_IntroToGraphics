@@ -18,6 +18,7 @@ class GfxResource():
     
     explosion = []
     re = None
+    collectableMissile = None
     clouds = []
 
 class SfxResource():
@@ -40,6 +41,7 @@ def init():
     GfxResource.clouds.append(pygame.image.load(IMG_DIRECTORY + 'cloud2.png'))
     GfxResource.clouds.append(pygame.image.load(IMG_DIRECTORY + 'cloud3.png'))
     
+    GfxResource.collectableMissile = pygame.image.load(IMG_DIRECTORY + 'collectable_missile.png')
     #Initialize Sound Resource Class
     if not pygame.mixer:
         print("Cannot Load Sounds")
