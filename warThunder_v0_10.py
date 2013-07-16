@@ -150,50 +150,7 @@ class RandomEnemy(pygame.sprite.Sprite):
         self.rect.center = (self.screen.get_width()+self.image.get_width()*2, 
                             random.randint(self.image.get_height(),screen.get_height()-self.image.get_height()/2))
         self.dx = random.randrange(-RandomEnemy.MAX_SPEED, -RandomEnemy.MIN_SPEED)
-       
-"""
-class HorizontalLinearEnemy(pygame.sprite.Sprite):
-    def __init__(self, screen, player):
-        pygame.sprite.Sprite.__init__(self)
-        self.screen = screen
-        self.image = pygame.image.load( IMG_DIRECTORY + 'random_enemy.png')
-        self.rect = self.image.get_rect()        
-        self.dx = -5
-        self.reset()
-        
-    def update(self):
-        self.rect.left += self.dx        
-        if self.rect.right <= 0:
-            self.reset()
-            
-    def reset(self):
-        #Randomize entry point onto screen
-        self.rect.center = (self.screen.get_width()+self.image.get_width()*2, 
-                            random.randint(self.image.get_height()/2,screen.get_height()-self.image.get_height()/2))
-        
-"""
-
-"""
-class VerticalLinearEnemy(pygame.sprite.Sprite):
-    def __init__(self, screen):
-        pygame.sprite.Sprite.__init__(self)
-        self.screen = screen
-        self.image = pygame.image.load( IMG_DIRECTORY + 'random_enemy.png')
-        self.rect = self.image.get_rect()        
-        self.dy = -5
-        self.reset()
-        
-    def update(self):
-        self.rect.left += self.dx        
-        if self.rect.right <= 0:
-            self.reset()
-            
-    def reset(self):
-        #Randomize entry point onto screen
-        self.rect.center = (self.screen.get_width()+self.image.get_width()*2, 
-                            random.randint(self.image.get_height()/2,screen.get_height()-self.image.get_height()/2))
-
-"""
+ 
                 
 """ Classes """ 
 class Parallax(pygame.sprite.Sprite):    
@@ -523,13 +480,7 @@ def setupStageOne(randomEnemies,player):
         
     return randomEnemies
 
-"""
-def updateStageOne(randomEnemySprites, linearHorizontalEnemySprites):
-    numOfRandomEnemySprites = 100
-    numOfLinearEnemySprites = 50
-    
-    return randomEnemySprites, numOfLinearEnemySprites
-"""
+
     
 def gamePlayScreen():
     running = True
